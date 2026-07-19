@@ -1,0 +1,521 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>UniGrok — One Grok gateway. Every coding agent.</title>
+<meta name="description" content="UniGrok lets Codex, Claude, VS Code, and other MCP clients share a server-side Grok connection without copying your xAI credential into every editor.">
+<style>
+:root{
+  --bg:#080b14;
+  --card:#0d1220;
+  --card-soft:rgba(255,255,255,.035);
+  --border:rgba(255,255,255,.08);
+  --border-strong:rgba(255,255,255,.14);
+  --text:#e6edf3;
+  --muted:#8b98a9;
+  --cyan:#58e6d9;
+  --blue:#58a6ff;
+  --purple:#bc8cff;
+  --grad:linear-gradient(90deg,#58a6ff,#bc8cff);
+  --radius:14px;
+  --font:Inter,-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--font);
+  font-size:16px;
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+
+/* ---------- header ---------- */
+header{
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;z-index:10;
+  background:rgba(8,11,20,.88);
+  backdrop-filter:blur(10px);
+}
+.nav{display:flex;align-items:center;gap:24px;padding:14px 0;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.logo{
+  width:34px;height:34px;border-radius:9px;
+  background:var(--grad);
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;color:#080b14;letter-spacing:.02em;
+  flex:none;
+}
+.brand-name{font-weight:600;font-size:15px;color:var(--text)}
+.brand-sub{
+  font-size:10px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--muted);display:block;margin-top:-2px;
+}
+nav.links{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+nav.links a{color:var(--muted);font-size:14px;font-weight:500}
+nav.links a:hover{color:var(--text);text-decoration:none}
+nav.links a.cta{
+  color:var(--text);
+  border:1px solid var(--border-strong);
+  border-radius:999px;padding:6px 14px;
+  transition:border-color .15s ease;
+}
+nav.links a.cta:hover{border-color:var(--blue)}
+
+/* ---------- shared ---------- */
+.eyebrow{
+  font-size:11px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;
+  color:var(--cyan);
+}
+.eyebrow.grad{
+  background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+section{padding:72px 0}
+h2{font-size:clamp(24px,3.4vw,32px);line-height:1.25;letter-spacing:-.015em;margin:12px 0 10px;font-weight:700}
+.sub{color:var(--muted);max-width:640px;font-size:16px}
+.card{
+  background:var(--card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+}
+
+/* ---------- hero ---------- */
+.hero{padding:80px 0 56px}
+.hero-grid{display:grid;grid-template-columns:1.15fr .95fr;gap:48px;align-items:start}
+h1{
+  font-size:clamp(34px,5.4vw,54px);
+  line-height:1.08;letter-spacing:-.025em;font-weight:800;
+  margin:16px 0 18px;
+}
+h1 .grad{
+  background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.lede{color:var(--muted);font-size:18px;max-width:540px;margin-bottom:28px}
+.cta-row{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:36px}
+.btn{
+  display:inline-block;border-radius:10px;padding:11px 20px;
+  font-size:15px;font-weight:600;
+}
+.btn:hover{text-decoration:none}
+.btn-primary{background:var(--grad);color:#080b14}
+.btn-primary:hover{filter:brightness(1.08)}
+.btn-ghost{border:1px solid var(--border-strong);color:var(--text)}
+.btn-ghost:hover{border-color:var(--cyan);color:var(--cyan)}
+.pillars{display:grid;gap:12px}
+.pillar{display:flex;gap:14px;align-items:baseline}
+.pillar .num{
+  font-size:12px;font-weight:700;letter-spacing:.08em;
+  background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  flex:none;
+}
+.pillar p{font-size:15px;color:var(--text)}
+
+/* terminal card */
+.term{overflow:hidden}
+.term-head{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;border-bottom:1px solid var(--border);
+  background:var(--card-soft);
+}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.dot:nth-child(1){background:rgba(255,255,255,.16)}
+.dot:nth-child(2){background:rgba(255,255,255,.12)}
+.dot:nth-child(3){background:rgba(255,255,255,.08)}
+.term-title{font-size:12px;color:var(--muted);margin-left:6px}
+.term pre{
+  font-family:var(--mono);font-size:13px;line-height:1.75;
+  padding:18px 20px;overflow-x:auto;color:var(--text);
+}
+.term .p{color:var(--purple)}
+.term .ok{color:var(--cyan)}
+.term .k{color:var(--muted)}
+.term .v{color:var(--blue)}
+.term .c{color:var(--muted);font-style:italic}
+.term-caption{
+  padding:10px 16px;border-top:1px solid var(--border);
+  font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--muted);
+}
+
+/* status strip */
+.status{
+  margin-top:48px;
+  display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+  background:var(--border);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.status > div{background:var(--card);padding:16px 20px}
+.status .lab{
+  font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:4px;
+}
+.status .val{font-size:14px;color:var(--muted)}
+.honesty{
+  margin-top:16px;font-size:13px;color:var(--muted);
+}
+.honesty strong{color:var(--text);font-weight:600}
+
+/* ---------- feature cards ---------- */
+.cards{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-top:36px}
+.feature{padding:24px;position:relative;overflow:hidden}
+.feature::before{
+  content:"";position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--grad);opacity:.85;
+}
+.feature .num{
+  font-size:12px;font-weight:700;letter-spacing:.08em;
+  background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+.feature h3{font-size:17px;font-weight:600;margin:8px 0 8px}
+.feature p{font-size:14px;color:var(--muted)}
+.feature .tag{
+  display:inline-block;margin-top:14px;
+  font-size:12px;color:var(--cyan);
+  border:1px solid var(--border);border-radius:999px;padding:4px 12px;
+  background:var(--card-soft);
+}
+.feature a.tag:hover{border-color:var(--cyan);text-decoration:none}
+
+/* flow diagram */
+.flow{
+  margin-top:40px;
+  display:flex;align-items:stretch;gap:0;flex-wrap:wrap;
+}
+.flow-node{
+  flex:1 1 220px;padding:20px 22px;text-align:center;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+}
+.flow-node .lab{
+  font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:6px;
+}
+.flow-node .val{font-size:14px;color:var(--muted)}
+.flow-arrow{
+  flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+  padding:0 14px;font-size:20px;
+  background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+  font-weight:700;
+}
+
+/* ---------- quick start ---------- */
+.qs-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;margin-top:36px;align-items:start}
+.codeblock{overflow:hidden}
+.codeblock pre{
+  font-family:var(--mono);font-size:13.5px;line-height:1.9;
+  padding:20px 22px;overflow-x:auto;color:var(--text);
+}
+.codeblock .c{color:var(--muted);font-style:italic}
+.linkcards{display:grid;gap:14px}
+.linkcard{
+  display:block;padding:18px 20px;
+  background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+  transition:border-color .15s ease;
+}
+.linkcard:hover{border-color:var(--blue);text-decoration:none}
+.linkcard .lab{
+  font-size:10px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--cyan);margin-bottom:4px;
+}
+.linkcard .val{font-size:15px;color:var(--text);font-weight:500}
+
+/* ---------- knowledge rows ---------- */
+.rows{margin-top:32px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden}
+.row{
+  display:flex;align-items:baseline;gap:18px;flex-wrap:wrap;
+  padding:18px 22px;background:var(--card);
+  border-top:1px solid var(--border);
+  transition:background .15s ease;
+}
+.row:first-child{border-top:none}
+.row:hover{background:var(--card-soft);text-decoration:none}
+.row .path{font-family:var(--mono);font-size:14px;color:var(--blue);flex:none}
+.row .desc{font-size:14px;color:var(--muted);flex:1 1 auto}
+.row .arr{
+  font-weight:700;
+  background:var(--grad);
+  -webkit-background-clip:text;background-clip:text;
+  -webkit-text-fill-color:transparent;color:transparent;
+}
+
+/* ---------- contribute ---------- */
+#contribute .cta-row{margin:28px 0 0}
+
+/* ---------- footer ---------- */
+footer{border-top:1px solid var(--border);padding:40px 0 48px;margin-top:24px}
+.foot{display:flex;gap:32px;align-items:flex-start;justify-content:space-between;flex-wrap:wrap}
+.foot-brand{display:flex;gap:12px;align-items:flex-start;max-width:420px}
+.foot .brand-name{display:block}
+.foot .tagline{font-size:14px;color:var(--muted);margin-top:6px}
+.foot nav{display:flex;gap:22px;flex-wrap:wrap}
+.foot nav a{color:var(--muted);font-size:14px}
+.foot nav a:hover{color:var(--text);text-decoration:none}
+
+/* ---------- responsive ---------- */
+@media (max-width:900px){
+  .hero-grid{grid-template-columns:1fr}
+  .qs-grid{grid-template-columns:1fr}
+  .status{grid-template-columns:1fr}
+  .cards{grid-template-columns:1fr}
+  .flow{flex-direction:column}
+  .flow-arrow{padding:8px 0;transform:rotate(90deg)}
+}
+@media (max-width:560px){
+  section{padding:52px 0}
+  .hero{padding:56px 0 40px}
+  .nav{gap:14px}
+  nav.links{gap:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap nav">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">UG</div>
+      <div>
+        <span class="brand-name">UniGrok</span>
+        <span class="brand-sub">Grok MCP Gateway</span>
+      </div>
+    </div>
+    <nav class="links" aria-label="Primary">
+      <a href="#how-it-works">How it works</a>
+      <a href="#get-started">Get started</a>
+      <a href="#knowledge">Knowledge</a>
+      <a href="/contribute">Contribute</a>
+      <a href="https://github.com/djtelicloud/grok-mcp-server">GitHub</a>
+      <a class="cta" href="https://control.grokmcp.org">Contributor control</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+  <!-- ================= HERO ================= -->
+  <section class="hero">
+    <div class="wrap">
+      <div class="hero-grid">
+        <div>
+          <p class="eyebrow grad">Open source &middot; Local first &middot; MCP native</p>
+          <h1>One Grok gateway.<br><span class="grad">Every coding agent.</span></h1>
+          <p class="lede">UniGrok lets Codex, Claude, VS&nbsp;Code, and other MCP clients share a server-side Grok connection without copying your xAI credential into every editor.</p>
+          <div class="cta-row">
+            <a class="btn btn-primary" href="https://github.com/djtelicloud/grok-mcp-server">Explore the project&nbsp;&#8599;</a>
+            <a class="btn btn-ghost" href="#get-started">Run it locally&nbsp;&#8595;</a>
+          </div>
+          <div class="pillars">
+            <div class="pillar"><span class="num">01</span><p>One server-side credential boundary</p></div>
+            <div class="pillar"><span class="num">02</span><p>API and subscription CLI planes stay distinct</p></div>
+            <div class="pillar"><span class="num">03</span><p>Codex-owned integration and release gates</p></div>
+          </div>
+        </div>
+
+        <div class="card term" aria-label="Example local command session">
+          <div class="term-head">
+            <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+            <span class="term-title">example &middot; local command session</span>
+          </div>
+<pre>
+<span class="p">$</span> curl -fsS localhost:4765/healthz
+<span class="ok">&#10003;</span> example response: {"status":"healthy"}
+
+<span class="p">$</span> codex mcp get grok
+<span class="k">transport</span>    <span class="v">Streamable HTTP</span>
+<span class="k">endpoint</span>     <span class="v">localhost:4765/mcp</span>
+<span class="k">tools</span>        <span class="v">agent + research jobs</span>
+<span class="k">credential</span>   <span class="v">server-side only</span>
+<span class="c"># each client sends its own X-Client-ID</span>
+</pre>
+          <div class="term-caption">Published route contract &middot; Not a live runtime probe</div>
+        </div>
+      </div>
+
+      <div class="status" role="list" aria-label="Service surface status">
+        <div role="listitem">
+          <div class="lab">Public project info</div>
+          <div class="val">Static metadata available</div>
+        </div>
+        <div role="listitem">
+          <div class="lab">Control center</div>
+          <div class="val">GitHub role-gated</div>
+        </div>
+        <div role="listitem">
+          <div class="lab">Remote MCP</div>
+          <div class="val">Private OAuth &middot; API plane only</div>
+        </div>
+      </div>
+      <p class="honesty"><strong>Never send an xAI API key to this website.</strong> This public site holds no credentials and requests none.</p>
+    </div>
+  </section>
+
+  <!-- ================= HOW IT WORKS ================= -->
+  <section id="how-it-works">
+    <div class="wrap">
+      <p class="eyebrow">One service, clear trust zones</p>
+      <h2>Local power without making your laptop the product.</h2>
+      <p class="sub">The public site teaches the project. The protected control center is for approved contributors. UniGrok itself keeps credentials and model execution behind an MCP boundary.</p>
+
+      <div class="cards">
+        <article class="card feature">
+          <span class="num">01</span>
+          <h3>Shared MCP gateway</h3>
+          <p>Connect multiple IDE agents to one stable endpoint with per-client attribution and server-held credentials.</p>
+          <span class="tag">POST /mcp</span>
+        </article>
+        <article class="card feature">
+          <span class="num">02</span>
+          <h3>Two execution planes</h3>
+          <p>The xAI API plane and Grok CLI subscription plane have separate catalogs, sessions, costs, and failover rules.</p>
+          <span class="tag">api &ne; cli</span>
+        </article>
+        <article class="card feature">
+          <span class="num">03</span>
+          <h3>Supervised collaboration</h3>
+          <p>Agents and humans can propose changes while deterministic tests and Codex-owned landing keep main coherent.</p>
+          <span class="tag">review &rarr; verify &rarr; land</span>
+        </article>
+        <article class="card feature">
+          <span class="num">04</span>
+          <h3>Forge evolutionary search</h3>
+          <p>Verified swarm and evolutionary code search runs in the local contributor Forge, not in the browser.</p>
+          <a class="tag" href="/contribute">become a contributor &rarr;</a>
+        </article>
+      </div>
+
+      <div class="flow" aria-label="Request flow">
+        <div class="flow-node">
+          <div class="lab">IDE agents</div>
+          <div class="val">Codex &middot; Claude &middot; VS&nbsp;Code</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-node">
+          <div class="lab">UniGrok MCP</div>
+          <div class="val">Routing &middot; sessions &middot; policy</div>
+        </div>
+        <div class="flow-arrow" aria-hidden="true">&rarr;</div>
+        <div class="flow-node">
+          <div class="lab">Grok planes</div>
+          <div class="val">xAI API &middot; local CLI</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GET STARTED ================= -->
+  <section id="get-started">
+    <div class="wrap">
+      <p class="eyebrow">Start with the real boundary</p>
+      <h2>Run locally. Verify directly. Then connect your IDE.</h2>
+      <p class="sub">Initialization prints the supported xAI API and SuperGrok CLI credential paths. Complete at least one before expecting real agent calls to succeed.</p>
+
+      <div class="qs-grid">
+        <div class="card codeblock">
+<pre>
+git clone https://github.com/djtelicloud/grok-mcp-server.git
+cd grok-mcp-server
+uv run python main.py init
+<span class="c"># Choose an API or CLI credential path; then:</span>
+docker compose up --build -d
+</pre>
+        </div>
+        <div class="linkcards">
+          <a class="linkcard" href="https://github.com/djtelicloud/grok-mcp-server/blob/main/README.md">
+            <div class="lab">Quick start</div>
+            <div class="val">Install and start UniGrok&nbsp;&#8599;</div>
+          </a>
+          <a class="linkcard" href="https://github.com/djtelicloud/grok-mcp-server/blob/main/README.md#connect-your-ide">
+            <div class="lab">IDE setup</div>
+            <div class="val">Connect Codex and other clients&nbsp;&#8599;</div>
+          </a>
+          <a class="linkcard" href="https://github.com/djtelicloud/grok-mcp-server/blob/main/docs/reference.md">
+            <div class="lab">Architecture</div>
+            <div class="val">Understand planes and trust zones&nbsp;&#8599;</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= KNOWLEDGE ================= -->
+  <section id="knowledge">
+    <div class="wrap">
+      <p class="eyebrow">Built for people and agents</p>
+      <h2>Public project context, in machine-readable form.</h2>
+
+      <div class="rows">
+        <a class="row" href="/llms.txt">
+          <span class="path">/llms.txt</span>
+          <span class="desc">Concise agent orientation</span>
+          <span class="arr" aria-hidden="true">&rarr;</span>
+        </a>
+        <a class="row" href="/docs/okf/">
+          <span class="path">/docs/okf/</span>
+          <span class="desc">OKF knowledge bundle</span>
+          <span class="arr" aria-hidden="true">&rarr;</span>
+        </a>
+        <a class="row" href="/.well-known/unigrok.json">
+          <span class="path">/.well-known/unigrok.json</span>
+          <span class="desc">Discovery contract</span>
+          <span class="arr" aria-hidden="true">&rarr;</span>
+        </a>
+        <a class="row" href="/api/public/v1/project">
+          <span class="path">/api/public/v1/project</span>
+          <span class="desc">Versioned metadata</span>
+          <span class="arr" aria-hidden="true">&rarr;</span>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= CONTRIBUTE ================= -->
+  <section id="contribute">
+    <div class="wrap">
+      <p class="eyebrow">Help build the gateway</p>
+      <h2>Contributors get a control plane. Visitors get a clear front door.</h2>
+      <p class="sub">GitHub login establishes contributor identity. Every protected request performs a fresh server-side role check against this repository before returning project data.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="/contribute">Become a contributor&nbsp;&rarr;</a>
+        <a class="btn btn-ghost" href="https://github.com/djtelicloud/grok-mcp-server/issues">View open issues</a>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div class="foot-brand">
+      <div class="logo" aria-hidden="true">UG</div>
+      <div>
+        <span class="brand-name">UniGrok</span>
+        <span class="brand-sub">Universal Grok MCP</span>
+        <p class="tagline">Open-source infrastructure for supervised, multi-agent development.</p>
+      </div>
+    </div>
+    <nav aria-label="Footer">
+      <a href="https://github.com/djtelicloud/grok-mcp-server">GitHub</a>
+      <a href="/contribute">Contribute</a>
+      <a href="/llms.txt">llms.txt</a>
+      <a href="https://control.grokmcp.org">Control</a>
+    </nav>
+  </div>
+</footer>
+
+</body>
+</html>

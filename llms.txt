@@ -1,0 +1,22 @@
+# UniGrok
+
+> A local-first universal MCP gateway for xAI Grok models.
+
+UniGrok gives MCP-compatible coding agents one shared, server-side gateway to Grok. The API and CLI execution planes remain distinct; never infer model availability across planes.
+
+## Canonical resources
+- Homepage: https://grokmcp.org
+- Repository: https://github.com/djtelicloud/grok-mcp-server
+- Architecture: https://github.com/djtelicloud/grok-mcp-server/blob/main/docs/reference.md
+- IDE setup: https://github.com/djtelicloud/grok-mcp-server/blob/main/README.md#connect-your-ide
+- Contribute: https://grokmcp.org/contribute
+- Public project JSON: https://grokmcp.org/api/public/v1/project
+- OKF knowledge bundle: https://grokmcp.org/docs/okf/okf-manifest.json
+
+## Access boundaries
+- Public project information is available without authentication.
+- Contributor control uses GitHub login and a fresh server-side repository role check on every protected request. The minimum accepted role is triage.
+- The default local MCP endpoint is http://localhost:4765/mcp.
+- The private API-plane remote MCP is https://mcp.grokmcp.org/mcp. It uses OAuth PKCE, short-lived scoped tokens, and live repository-access introspection.
+- No unauthenticated remote MCP or inference endpoint is published. Public machine-readable project information is deliberately separate from contributor controls.
+- Never send an xAI API key to this website or embed it in an IDE MCP configuration.
