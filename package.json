@@ -1,0 +1,6 @@
+{
+  "name": "grokmcp-org-site",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static marketing site for grokmcp.org — plain HTML/CSS, no build step, no server code, no secrets."
+}
